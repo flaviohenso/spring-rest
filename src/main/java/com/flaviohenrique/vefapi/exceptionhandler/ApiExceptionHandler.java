@@ -1,6 +1,7 @@
 package com.flaviohenrique.vefapi.exceptionhandler;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import com.flaviohenrique.vefapi.domain.exception.EntidadeNaoEncontradaException;
 import com.flaviohenrique.vefapi.domain.exception.NegocioException;
 
 @ControllerAdvice
@@ -31,7 +33,19 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 			
 			var problema = new Problema();
 			problema.setStatus(status.value());
-			problema.setLocalDateTime(LocalDateTime.now());
+			problema.setLocalDateTime(OffsetDateTime.now());
+			problema.setTitulo(negocioException.getMessage());
+			
+			return super.handleExceptionInternal(negocioException, problema, new HttpHeaders(), status, request);
+	}
+	
+	@ExceptionHandler(EntidadeNaoEncontradaException.class)
+	public ResponseEntity<Object> handleEntidadeNaoEncontradaExeception(NegocioException negocioException, WebRequest request) {
+			var status = HttpStatus.NOT_FOUND;
+			
+			var problema = new Problema();
+			problema.setStatus(status.value());
+			problema.setLocalDateTime(OffsetDateTime.now());
 			problema.setTitulo(negocioException.getMessage());
 			
 			return super.handleExceptionInternal(negocioException, problema, new HttpHeaders(), status, request);
@@ -54,7 +68,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
 		problema.setStatus(status.value());
 		problema.setTitulo("Um o mais campo estao invalidos! Faça o preenchimento corretamente");
-		problema.setLocalDateTime(LocalDateTime.now());
+		problema.setLocalDateTime(OffsetDateTime.now());
 		problema.setCampos(campos);
 
 		return super.handleExceptionInternal(ex, problema, headers, status, request);
